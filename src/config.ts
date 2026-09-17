@@ -5,8 +5,19 @@ const packageJson = parsePackageJson(createRequire(import.meta.url)("../package.
 export const PROVIDER_ID = "codexsale";
 export const PROVIDER_NAME = "Codex Sale";
 export const DEFAULT_API_BASE_URL = "https://codex.sale/v1";
-export const API_KEY_ENV = "CODEXSALE_API_KEY";
-export const BASE_URL_ENV = "CODEXSALE_BASE_URL";
+/**
+ * API key environment variables, in priority order. The first two match the
+ * names used by the install scripts on https://codex.sale/docs; `CODEX_LB_API_KEY`
+ * is the legacy name those scripts still accept.
+ */
+export const API_KEY_ENVS = [
+	"CODEXSALE_API_KEY",
+	"CODEX_SALE_API_KEY",
+	"CODEX_LB_API_KEY",
+] as const;
+
+/** Base URL environment variables, in priority order. */
+export const BASE_URL_ENVS = ["CODEXSALE_BASE_URL", "CODEX_SALE_BASE_URL"] as const;
 export const API = "openai-responses" as const;
 export const USER_AGENT = `${packageJson.name.split("/").at(-1) ?? packageJson.name}/${packageJson.version}`;
 
