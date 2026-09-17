@@ -98,8 +98,9 @@ function parseProvider(value: unknown): CatalogProvider | undefined {
 }
 
 /**
- * Fallback metadata for models whose capabilities are no longer returned by the
- * `/v1/models` endpoint (upstream dropped the `metadata` field).
+ * Fallback metadata for models whose capabilities are not returned by the
+ * `/v1/models` endpoint. The endpoint currently sends only `id`, `type`,
+ * `display_name` and `created_at`.
  */
 interface KnownModelInfo {
 	display_name?: string;
@@ -193,6 +194,7 @@ export function parseCatalogPage(value: unknown): CatalogListResponse {
 				model: {
 					slug: id,
 					display_name: asString(metadata?.display_name) ?? known?.display_name ?? id,
+					status: asString(row?.status) ?? asString(metadata?.status),
 					context_window: asNumber(metadata?.context_window) ?? known?.context_window,
 					max_output_tokens: asNumber(metadata?.max_output_tokens) ?? known?.max_output_tokens,
 					input_modalities: modalities,
