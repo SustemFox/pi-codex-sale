@@ -23,7 +23,11 @@ export function stripNonOpenAIReasoningFields(payload: unknown): unknown {
 	const reasoning = asRecord(next.reasoning);
 	if (reasoning && "summary" in reasoning) {
 		const { summary: _summary, ...rest } = reasoning;
-		next.reasoning = rest;
+		if (Object.keys(rest).length === 0) {
+			delete next.reasoning;
+		} else {
+			next.reasoning = rest;
+		}
 	}
 
 	if (Array.isArray(next.include)) {

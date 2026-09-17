@@ -41,7 +41,9 @@ export interface CatalogRow {
 
 export interface CatalogListResponse {
 	models: CatalogRow[];
-	total: number;
+	/** Number of raw rows consumed before filtering. */
+	itemsRead: number;
+	total?: number;
 	limit?: number;
 	offset?: number;
 }

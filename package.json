@@ -25,7 +25,9 @@
   ],
   "files": [
     "src",
+    "scripts",
     "README.md",
+    "README.ru.md",
     "LICENSE"
   ],
   "pi": {
@@ -35,7 +37,9 @@
   },
   "scripts": {
     "prepare": "node scripts/link-pi-types.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "check": "npm run typecheck && npm test"
   },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",

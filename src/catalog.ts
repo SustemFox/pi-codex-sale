@@ -91,7 +91,9 @@ function parseProvider(value: unknown): CatalogProvider | undefined {
 					supports_developer_messages: asBoolean(capabilities.supports_developer_messages),
 					supports_strict_tools: asBoolean(capabilities.supports_strict_tools),
 					supports_reasoning: asBoolean(capabilities.supports_reasoning),
-					supported_reasoning_efforts: asStringArray(capabilities.supported_reasoning_efforts),
+					supported_reasoning_efforts: parseReasoningLevels(
+						capabilities.supported_reasoning_efforts,
+					),
 				}
 			: undefined,
 	};
@@ -111,42 +113,57 @@ interface KnownModelInfo {
 }
 
 const KNOWN_MODELS: Record<string, KnownModelInfo> = {
-	"claude-haiku-4-5": { context_window: 200_000, input_modalities: ["text"] },
-	"claude-opus-4-6": { context_window: 1_000_000, input_modalities: ["text"] },
-	"claude-opus-4-7": { context_window: 1_000_000, input_modalities: ["text"] },
-	"claude-opus-4-8": { context_window: 1_000_000, input_modalities: ["text"] },
-	"claude-sonnet-4-6": { context_window: 1_000_000, input_modalities: ["text"] },
-	"deepseek-v4-flash": { context_window: 128_000, input_modalities: ["text"] },
-	"deepseek-v4-pro": { context_window: 128_000, input_modalities: ["text"] },
-	"glm-5.2": { context_window: 128_000, input_modalities: ["text"] },
-	"glm-5.3": { context_window: 128_000, input_modalities: ["text"] },
-	"glm-5.3-flash": { context_window: 128_000, input_modalities: ["text"] },
-	"gpt-5.4-mini": {
-		context_window: 200_000,
+	"deepseek-flash": {
+		display_name: "DeepSeek V4.1 Flash",
+		context_window: 128_000,
 		input_modalities: ["text"],
-		reasoning_levels: ["low", "medium", "high", "xhigh"],
+	},
+	"deepseek-v4-pro": {
+		display_name: "DeepSeek V4 Pro",
+		context_window: 128_000,
+		input_modalities: ["text"],
+	},
+	"glm-5.2": {
+		display_name: "Z.ai GLM-5.2",
+		context_window: 128_000,
+		input_modalities: ["text"],
+	},
+	"glm-5.3": {
+		display_name: "Z.ai GLM-5.3",
+		context_window: 128_000,
+		input_modalities: ["text"],
+	},
+	"glm-5.3-flash": {
+		display_name: "Z.ai GLM-5.3 Flash",
+		context_window: 128_000,
+		input_modalities: ["text"],
 	},
 	"gpt-5.5": {
+		display_name: "GPT 5.5",
 		context_window: 1_000_000,
 		input_modalities: ["text"],
 		reasoning_levels: ["low", "medium", "high", "xhigh"],
 	},
 	"gpt-5.6-luna": {
+		display_name: "GPT 5.6 Luna",
 		context_window: 1_000_000,
 		input_modalities: ["text", "image"],
 		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
 	},
 	"gpt-5.6-sol": {
+		display_name: "GPT 5.6 Sol",
 		context_window: 1_000_000,
 		input_modalities: ["text", "image"],
 		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
 	},
 	"gpt-5.6-terra": {
+		display_name: "GPT 5.6 Terra",
 		context_window: 1_000_000,
 		input_modalities: ["text", "image"],
 		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
 	},
 	"gpt-6-astra": {
+		display_name: "GPT 6 Astra",
 		context_window: 1_050_000,
 		input_modalities: ["text", "image"],
 		reasoning_levels: ["low", "medium", "high", "xhigh", "max", "ultra"],
@@ -177,6 +194,15 @@ export function parseCatalogPage(value: unknown): CatalogListResponse {
 			if (!id || isImageOnlyModel(id)) return [];
 			const metadata = asRecord(row?.metadata);
 			const known = KNOWN_MODELS[id];
+			const reportedDisplayNames = [
+				asString(row?.display_name),
+				asString(metadata?.display_name),
+			].filter((name): name is string => name !== undefined);
+			const displayName =
+				reportedDisplayNames.find((name) => name !== id) ??
+				known?.display_name ??
+				reportedDisplayNames[0] ??
+				id;
 
 			const modalities = Array.isArray(metadata?.input_modalities)
 				? asStringArray(metadata.input_modalities)
@@ -193,7 +219,7 @@ export function parseCatalogPage(value: unknown): CatalogListResponse {
 			return [{
 				model: {
 					slug: id,
-					display_name: asString(metadata?.display_name) ?? known?.display_name ?? id,
+					display_name: displayName,
 					status: asString(row?.status) ?? asString(metadata?.status),
 					context_window: asNumber(metadata?.context_window) ?? known?.context_window,
 					max_output_tokens: asNumber(metadata?.max_output_tokens) ?? known?.max_output_tokens,
@@ -207,7 +233,13 @@ export function parseCatalogPage(value: unknown): CatalogListResponse {
 				}],
 			} satisfies CatalogRow];
 		});
-		return { models, total: models.length };
+		return {
+			models,
+			itemsRead: record.data.length,
+			total: asNumber(record.total),
+			limit: asNumber(record.limit),
+			offset: asNumber(record.offset),
+		};
 	}
 	if (!record || !Array.isArray(record.models)) {
 		throw new Error("Codex Sale catalog response is invalid");
@@ -237,7 +269,8 @@ export function parseCatalogPage(value: unknown): CatalogListResponse {
 	});
 	return {
 		models,
-		total: asNumber(record.total) ?? models.length,
+		itemsRead: record.models.length,
+		total: asNumber(record.total),
 		limit: asNumber(record.limit),
 		offset: asNumber(record.offset),
 	};
@@ -391,6 +424,7 @@ export async function loadModels(options: {
 
 	const mapped: CodexSaleModel[] = [];
 	const seen = new Set<string>();
+	const seenCatalogIds = new Set<string>();
 	let offset = 0;
 	let total = Number.POSITIVE_INFINITY;
 
@@ -402,11 +436,20 @@ export async function loadModels(options: {
 			throw new Error(`Codex Sale catalog failed: HTTP ${response.status}`);
 		}
 		const payload = parseCatalogPage(await response.json());
-		total = payload.total;
-		if (payload.models.length === 0) {
+		if (payload.total !== undefined) {
+			total = payload.total;
+		}
+		if (payload.itemsRead === 0) {
+			break;
+		}
+		if (
+			payload.models.length > 0 &&
+			payload.models.every((row) => seenCatalogIds.has(row.model.slug))
+		) {
 			break;
 		}
 		for (const row of payload.models) {
+			seenCatalogIds.add(row.model.slug);
 			const model = toCodexSaleModel(row.model, row.providers, baseUrl, row.default_provider_ids);
 			if (!model || seen.has(model.id)) {
 				continue;
@@ -414,8 +457,8 @@ export async function loadModels(options: {
 			seen.add(model.id);
 			mapped.push(model);
 		}
-		offset += payload.models.length;
-		if (payload.models.length < pageSize) {
+		offset += payload.itemsRead;
+		if (payload.itemsRead < pageSize) {
 			break;
 		}
 	}

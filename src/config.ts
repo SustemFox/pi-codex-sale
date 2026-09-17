@@ -17,12 +17,17 @@ export const API_KEY_ENVS = [
 	"CODEX_LB_API_KEY",
 ] as const;
 
-export const BASE_URL_ENV = "CODEXSALE_BASE_URL";
+export const BASE_URL_ENVS = ["CODEXSALE_BASE_URL", "CODEX_SALE_BASE_URL"] as const;
 
-/** Resolves the current API base URL from the environment. */
+/** Resolves the current API base URL from the environment, in priority order. */
 export function resolveBaseUrlFromEnv(env: Record<string, string | undefined> = process.env): string {
-	const value = env[BASE_URL_ENV];
-	return normalizeApiBaseUrl(value && value.trim().length > 0 ? value : DEFAULT_API_BASE_URL);
+	for (const name of BASE_URL_ENVS) {
+		const value = env[name];
+		if (value && value.trim().length > 0) {
+			return normalizeApiBaseUrl(value);
+		}
+	}
+	return normalizeApiBaseUrl(DEFAULT_API_BASE_URL);
 }
 export const API = "openai-responses" as const;
 export const USER_AGENT = `${packageJson.name.split("/").at(-1) ?? packageJson.name}/${packageJson.version}`;

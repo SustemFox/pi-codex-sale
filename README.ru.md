@@ -36,9 +36,9 @@ export CODEXSALE_API_KEY='ваш_ключ'
 
 После этого перезапустите Pi — конфигурация читается при запуске.
 
-Ключ выдаётся в личном кабинете на [codex.sale](https://codex.sale/) после
-регистрации и пополнения баланса; там же есть инструкции по подключению на
-странице [codex.sale/docs](https://codex.sale/docs).
+Ключ доступен в личном кабинете на [codex.sale](https://codex.sale/).
+Инструкции по подключению других клиентов находятся на странице
+[codex.sale/docs](https://codex.sale/docs).
 
 ### Конфигурация
 
@@ -49,8 +49,8 @@ export CODEXSALE_API_KEY='ваш_ключ'
 
 Для совместимости с официальными скриптами установки на
 [codex.sale/docs](https://codex.sale/docs) для API-ключа также принимаются
-`CODEX_SALE_API_KEY` и легаси `CODEX_LB_API_KEY`. Приоритет — за
-`CODEXSALE_API_KEY`.
+`CODEX_SALE_API_KEY` и легаси `CODEX_LB_API_KEY`, а для базового URL —
+`CODEX_SALE_BASE_URL`. Приоритет — за именами `CODEXSALE_*`.
 
 Ключ можно хранить и во встроенном хранилище учётных данных Pi, а не в
 окружении:
@@ -115,6 +115,8 @@ Codex Sale не предоставляет endpoint для кредитов и �
 ```sh
 npm install        # ставит dev-зависимости и линкует типы peer-зависимостей Pi
 npm run typecheck  # tsc --noEmit
+npm test           # модульные тесты
+npm run check      # проверка типов + тесты
 ```
 
 Пакеты `@earendil-works/pi-ai` и `@earendil-works/pi-coding-agent`

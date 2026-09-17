@@ -77,6 +77,6 @@ for (const name of PEERS) {
 	linked.push(shortName);
 }
 
-if (linked.length > 0) {
+if (linked.length > 0 && process.env.npm_config_json !== "true") {
 	console.log(`[pi-codex-sale] linked peer types: ${linked.join(", ")}`);
 }

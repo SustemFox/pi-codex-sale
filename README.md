@@ -35,8 +35,8 @@ export CODEXSALE_API_KEY='your_api_key'
 
 Restart Pi afterwards — configuration is read at startup.
 
-API keys are issued in the Codex Sale dashboard at [codex.sale](https://codex.sale/)
-after registration and a balance top-up. Setup guides for other clients live at
+API keys are available in the Codex Sale dashboard at
+[codex.sale](https://codex.sale/). Setup guides for other clients live at
 [codex.sale/docs](https://codex.sale/docs).
 
 ### Configuration
@@ -48,8 +48,8 @@ after registration and a balance top-up. Setup guides for other clients live at
 
 For compatibility with the official install scripts on
 [codex.sale/docs](https://codex.sale/docs), `CODEX_SALE_API_KEY` and the legacy
-`CODEX_LB_API_KEY` are also accepted for the API key. `CODEXSALE_API_KEY` takes
-priority.
+`CODEX_LB_API_KEY` are also accepted for the API key, and
+`CODEX_SALE_BASE_URL` for the base URL. The `CODEXSALE_*` names take priority.
 
 You can also store the key in Pi's credential store instead of the environment:
 
@@ -112,6 +112,8 @@ No build step — Pi loads the TypeScript sources directly (via jiti).
 ```sh
 npm install        # installs dev deps and links Pi's peer type declarations
 npm run typecheck  # tsc --noEmit
+npm test           # unit tests
+npm run check      # typecheck + tests
 ```
 
 The packages `@earendil-works/pi-ai` and `@earendil-works/pi-coding-agent` are
