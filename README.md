@@ -5,13 +5,7 @@ A [Pi](https://pi.dev) provider extension for the **Codex Sale** inference API
 
 Codex Sale speaks the OpenAI Responses API, so this extension registers a
 `codexsale` provider, discovers the available models at runtime, and maps them
-into Pi's model format.
-
-This is a fork of
-[`pi-experientiallabs`](https://ampcode.com/@xyenon/pi-experientiallabs) by
-[XYenon](https://github.com/XYenon), adapted for the `codex.sale` endpoint and
-hardened against upstream API changes. See [Credits](#credits) and
-[Changes from upstream](#changes-from-upstream).
+into Pi's model format. See [Credits](#credits) for provenance.
 
 ## Install
 
@@ -63,8 +57,8 @@ exposed only if it is an agent model:
 - image-only models (`gpt-image-*`, DALL·E, Flux, …) are excluded, because they
   cannot do tool calls.
 
-Capabilities are read from the response when the API provides them. The
-upstream `metadata` object has been dropped at least once, so the extension
+Capabilities are read from the response when the API provides them. The Codex
+Sale API stopped returning the `metadata` object at one point, so the extension
 falls back to a built-in registry for `context_window`, input modalities and
 reasoning levels, and assumes `tools: true` for unknown ids. This means a model
 newly added by the API shows up in Pi automatically, without editing this
@@ -83,11 +77,10 @@ Thinking levels follow the model's `supported_reasoning_levels`, for example:
 pi --provider codexsale --model gpt-6-astra:high
 ```
 
-## Credits
+## Account balance
 
-The upstream Experiential Labs extension shows the account balance in the
-status bar by polling `/api/v1/credits`. **Codex Sale has no such endpoint** —
-every reasonable path returns 404:
+Codex Sale exposes no credits or balance endpoint — every reasonable path
+returns 404:
 
 ```
 404  /api/v1/credits
@@ -95,22 +88,21 @@ every reasonable path returns 404:
 404  /v1/me, /v1/usage, /v1/balance, /v1/user, /v1/keys, /v1/auth/me
 ```
 
-For that reason the credits/balance status is removed from this fork. The
-account balance is only visible in the Codex Sale web UI.
+The extension therefore polls for no balance and shows none in the status bar,
+so switching models costs no extra round trip. The account balance is only
+visible in the Codex Sale web UI.
 
-## Changes from upstream
+## Design notes
 
-- **Catalog parsing without `metadata`.** The API stopped sending the
-  `metadata` object. The upstream parser read `metadata.supports_parallel_tool_calls`
-  to decide `tools`, so every model was discarded and the provider reported no
-  models at all. This fork tolerates both response shapes and enriches from a
-  built-in model registry.
+- **Tolerant catalog parsing.** The API stopped sending the `metadata` object.
+  A parser that reads `metadata.supports_parallel_tool_calls` to decide `tools`
+  would discard every model and report an empty provider. This extension
+  tolerates both response shapes and enriches from a built-in model registry.
 - **Reasoning levels in both shapes.** Accepts `[{ effort: "high" }]` and
   `["high"]`.
 - **Image-only models filtered out** instead of being exposed as text models.
-- **Credits status removed** — `src/credits.ts` is gone, `creditsUrl` and
-  `originPath` were dropped from `src/urls.ts`. No more 404 request on every
-  model switch.
+- **No balance polling.** `src/credits.ts` is gone, and `creditsUrl` /
+  `originPath` were dropped from `src/urls.ts`.
 
 ## Development
 
@@ -129,7 +121,14 @@ type declarations from the installed `pi` CLI into `node_modules` so the type
 checker can resolve them. Set `PI_PACKAGE_ROOT` to a `node_modules` directory to
 point at a different Pi installation.
 
+## Credits
+
+This project is derived from
+[`pi-experientiallabs`](https://ampcode.com/@xyenon/pi-experientiallabs) by
+[XYenon](https://github.com/XYenon), adapted for the Codex Sale endpoint and
+hardened against changes in the Codex Sale API.
+
 ## License
 
-MIT. See [LICENSE](./LICENSE). Original work © XYenon; this fork is distributed
-under the same terms.
+MIT. See [LICENSE](./LICENSE). Original work © XYenon; this project is
+distributed under the same terms.
