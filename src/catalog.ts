@@ -12,6 +12,7 @@ import type {
 	CatalogListResponse,
 	CatalogModel,
 	CatalogProvider,
+	CatalogRow,
 	ExplabsModel,
 	ThinkingLevel,
 	ThinkingLevelMap,

@@ -1,5 +1,5 @@
 import { openAIResponsesApi } from "@earendil-works/pi-ai/compat";
-import type { Model, ProviderStreams, StreamOptions } from "@earendil-works/pi-ai";
+import type { Api, Model, ProviderStreams, StreamOptions } from "@earendil-works/pi-ai";
 
 const ENCRYPTED_REASONING = "reasoning.encrypted_content";
 
@@ -9,7 +9,7 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
 		: undefined;
 }
 
-export function isNativeOpenAIModel(model: Pick<Model, "id"> & { nativeOpenAIRoute?: boolean }): boolean {
+export function isNativeOpenAIModel(model: Pick<Model<Api>, "id"> & { nativeOpenAIRoute?: boolean }): boolean {
 	return model.nativeOpenAIRoute === true;
 }
 
@@ -40,7 +40,7 @@ export function stripNonOpenAIReasoningFields(payload: unknown): unknown {
 
 function withPayloadRewrite<TOptions extends StreamOptions>(
 	options: TOptions | undefined,
-	model: Model,
+	model: Model<Api>,
 ): TOptions | undefined {
 	if (isNativeOpenAIModel(model)) {
 		return options;
@@ -49,7 +49,7 @@ function withPayloadRewrite<TOptions extends StreamOptions>(
 	const previous = options?.onPayload;
 	return {
 		...options,
-		onPayload: async (payload: unknown, nextModel: Model) => {
+		onPayload: async (payload: unknown, nextModel: Model<Api>) => {
 			const rewritten = previous ? ((await previous(payload, nextModel)) ?? payload) : payload;
 			return stripNonOpenAIReasoningFields(rewritten);
 		},
