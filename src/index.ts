@@ -3,26 +3,14 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { codexSaleResponsesApi } from "./responses.ts";
 import {
 	API_KEY_ENVS,
-	BASE_URL_ENVS,
-	DEFAULT_API_BASE_URL,
 	PROVIDER_ID,
 	PROVIDER_NAME,
 	USER_AGENT,
+	resolveBaseUrlFromEnv,
 } from "./config.ts";
-import { normalizeApiBaseUrl } from "./urls.ts";
-
-function resolveBaseUrl(): string {
-	for (const name of BASE_URL_ENVS) {
-		const fromEnv = process.env[name];
-		if (fromEnv && fromEnv.length > 0) {
-			return normalizeApiBaseUrl(fromEnv);
-		}
-	}
-	return normalizeApiBaseUrl(DEFAULT_API_BASE_URL);
-}
 
 export default function codexSale(pi: ExtensionAPI): void {
-	const baseUrl = resolveBaseUrl();
+	const baseUrl = resolveBaseUrlFromEnv();
 
 	pi.registerProvider(
 		createProvider({

@@ -1,7 +1,7 @@
 export function normalizeApiBaseUrl(raw: string): string {
 	const trimmed = raw.trim().replace(/\/+$/, "");
 	if (!trimmed) {
-		throw new Error("CODEXSALE_BASE_URL is empty");
+		throw new Error("Codex Sale base URL is empty");
 	}
 	return trimmed.endsWith("/v1") ? trimmed : `${trimmed}/v1`;
 }

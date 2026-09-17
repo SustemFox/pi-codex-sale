@@ -51,6 +51,11 @@ For compatibility with the official install scripts on
 too: `CODEX_SALE_API_KEY` (and the legacy `CODEX_LB_API_KEY`) for the key and
 `CODEX_SALE_BASE_URL` for the base URL. The `CODEXSALE_*` names take priority.
 
+Older versions of those scripts point `CODEX_SALE_BASE_URL` at `lirmail.com`, a
+host Codex Sale has since retired. Such a value is ignored, so the working
+`https://codex.sale/v1` default stays in effect. Any other host is honoured as
+given.
+
 You can also store the key in Pi's credential store instead of the environment:
 
 ```sh
