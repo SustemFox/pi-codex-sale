@@ -1,7 +1,9 @@
 # pi-codex-sale
 
 A [Pi](https://pi.dev) provider extension for the **Codex Sale** inference API
-(`https://codex.sale/v1`).
+([codex.sale](https://codex.sale/), `https://codex.sale/v1`).
+
+[Русская версия](./README.ru.md)
 
 Codex Sale speaks the OpenAI Responses API, so this extension registers a
 `codexsale` provider, discovers the available models at runtime, and maps them
@@ -33,12 +35,21 @@ export CODEXSALE_API_KEY='your_api_key'
 
 Restart Pi afterwards — configuration is read at startup.
 
+API keys are issued in the Codex Sale dashboard at [codex.sale](https://codex.sale/)
+after registration and a balance top-up. Setup guides for other clients live at
+[codex.sale/docs](https://codex.sale/docs).
+
 ### Configuration
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `CODEXSALE_API_KEY` | *(none)* | API key. Required. |
 | `CODEXSALE_BASE_URL` | `https://codex.sale/v1` | API base URL. `/v1` is appended automatically if missing. |
+
+For compatibility with the official install scripts on
+[codex.sale/docs](https://codex.sale/docs), their variable names are accepted
+too: `CODEX_SALE_API_KEY` (and the legacy `CODEX_LB_API_KEY`) for the key and
+`CODEX_SALE_BASE_URL` for the base URL. The `CODEXSALE_*` names take priority.
 
 You can also store the key in Pi's credential store instead of the environment:
 
@@ -82,7 +93,8 @@ pi --provider codexsale --model gpt-6-astra:high
 
 Codex Sale exposes no credits or balance endpoint, so the extension registers
 none and sends no such request when switching models. The account balance is
-only visible in the Codex Sale web UI.
+only visible in the Codex Sale web UI. Billing is metered in calculated tokens,
+with a single balance shared by GPT and GLM models.
 
 ## Design notes
 
