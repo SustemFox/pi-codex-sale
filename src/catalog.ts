@@ -13,7 +13,7 @@ import type {
 	CatalogModel,
 	CatalogProvider,
 	CatalogRow,
-	ExplabsModel,
+	CodexSaleModel,
 	ThinkingLevel,
 	ThinkingLevelMap,
 } from "./types.ts";
@@ -260,7 +260,7 @@ function microToUsdPerMillion(micro: number | null | undefined): number {
 	return micro / 1_000_000;
 }
 
-export function pickCost(providers: CatalogProvider[]): ExplabsModel["cost"] {
+export function pickCost(providers: CatalogProvider[]): CodexSaleModel["cost"] {
 	const priced = providers.filter((provider) => provider.input_micro_usd_per_million != null);
 	const hostManaged = priced.filter((provider) => provider.billing_source === "host_managed");
 	const pool = (hostManaged.length > 0 ? hostManaged : priced).slice();
@@ -319,12 +319,12 @@ export function thinkingLevelMap(
 	return map;
 }
 
-export function toExplabsModel(
+export function toCodexSaleModel(
 	model: CatalogModel,
 	providers: CatalogProvider[],
 	baseUrl: string,
 	defaultProviderIds?: string[],
-): ExplabsModel | undefined {
+): CodexSaleModel | undefined {
 	if (!isAgentModel(model)) {
 		return undefined;
 	}
@@ -380,14 +380,14 @@ export async function loadModels(options: {
 	signal?: AbortSignal;
 	fetch?: typeof fetch;
 	pageSize?: number;
-}): Promise<ExplabsModel[]> {
+}): Promise<CodexSaleModel[]> {
 	const baseUrl = normalizeApiBaseUrl(options.baseUrl);
 	const fetchImpl = options.fetch ?? fetch;
 	const pageSize = options.pageSize ?? CATALOG_PAGE_SIZE;
 	const signal = withTimeout(options.signal, MODEL_FETCH_TIMEOUT_MS);
 	const headers = jsonHeaders(options.apiKey);
 
-	const mapped: ExplabsModel[] = [];
+	const mapped: CodexSaleModel[] = [];
 	const seen = new Set<string>();
 	let offset = 0;
 	let total = Number.POSITIVE_INFINITY;
@@ -405,7 +405,7 @@ export async function loadModels(options: {
 			break;
 		}
 		for (const row of payload.models) {
-			const model = toExplabsModel(row.model, row.providers, baseUrl, row.default_provider_ids);
+			const model = toCodexSaleModel(row.model, row.providers, baseUrl, row.default_provider_ids);
 			if (!model || seen.has(model.id)) {
 				continue;
 			}

@@ -4,8 +4,11 @@
   "description": "Pi extension for the Codex Sale inference provider",
   "type": "module",
   "license": "MIT",
-  "author": "XYenon",
-  "homepage": "https://ampcode.com/@xyenon/pi-experientiallabs",
+  "author": "SustemFox",
+  "contributors": [
+    "XYenon"
+  ],
+  "homepage": "https://github.com/SustemFox/pi-codex-sale#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SustemFox/pi-codex-sale.git"

@@ -46,7 +46,7 @@ export interface CatalogListResponse {
 	offset?: number;
 }
 
-export interface ExplabsModel {
+export interface CodexSaleModel {
 	id: string;
 	name: string;
 	api: "openai-responses";
