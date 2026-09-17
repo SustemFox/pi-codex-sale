@@ -47,9 +47,9 @@ after registration and a balance top-up. Setup guides for other clients live at
 | `CODEXSALE_BASE_URL` | `https://codex.sale/v1` | API base URL. `/v1` is appended automatically if missing. |
 
 For compatibility with the official install scripts on
-[codex.sale/docs](https://codex.sale/docs), their variable names are accepted
-too: `CODEX_SALE_API_KEY` (and the legacy `CODEX_LB_API_KEY`) for the key and
-`CODEX_SALE_BASE_URL` for the base URL. The `CODEXSALE_*` names take priority.
+[codex.sale/docs](https://codex.sale/docs), `CODEX_SALE_API_KEY` and the legacy
+`CODEX_LB_API_KEY` are also accepted for the API key. `CODEXSALE_API_KEY` takes
+priority.
 
 You can also store the key in Pi's credential store instead of the environment:
 

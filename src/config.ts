@@ -17,39 +17,12 @@ export const API_KEY_ENVS = [
 	"CODEX_LB_API_KEY",
 ] as const;
 
-/** Base URL environment variables, in priority order. */
-export const BASE_URL_ENVS = ["CODEXSALE_BASE_URL", "CODEX_SALE_BASE_URL"] as const;
+export const BASE_URL_ENV = "CODEXSALE_BASE_URL";
 
-/**
- * Hosts used by older Codex Sale install scripts. The service has moved to
- * codex.sale; values naming these hosts are treated as stale and ignored.
- */
-export const LEGACY_API_HOSTS = ["lirmail.com"] as const;
-
-/**
- * True for a base URL pointing at a host Codex Sale no longer uses. The old
- * install scripts default to such a host, so honouring it would replace a
- * working default with a dead one.
- */
-function isLegacyBaseUrl(raw: string): boolean {
-	try {
-		const host = new URL(normalizeApiBaseUrl(raw)).hostname.toLowerCase();
-		return LEGACY_API_HOSTS.some((legacy) => host === legacy || host.endsWith(`.${legacy}`));
-	} catch {
-		return false;
-	}
-}
-
-/** Resolves the API base URL from the environment, in priority order. */
+/** Resolves the current API base URL from the environment. */
 export function resolveBaseUrlFromEnv(env: Record<string, string | undefined> = process.env): string {
-	for (const name of BASE_URL_ENVS) {
-		const value = env[name];
-		if (!value || value.trim().length === 0 || isLegacyBaseUrl(value)) {
-			continue;
-		}
-		return normalizeApiBaseUrl(value);
-	}
-	return normalizeApiBaseUrl(DEFAULT_API_BASE_URL);
+	const value = env[BASE_URL_ENV];
+	return normalizeApiBaseUrl(value && value.trim().length > 0 ? value : DEFAULT_API_BASE_URL);
 }
 export const API = "openai-responses" as const;
 export const USER_AGENT = `${packageJson.name.split("/").at(-1) ?? packageJson.name}/${packageJson.version}`;

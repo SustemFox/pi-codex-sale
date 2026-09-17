@@ -48,9 +48,9 @@ export CODEXSALE_API_KEY='ваш_ключ'
 | `CODEXSALE_BASE_URL` | `https://codex.sale/v1` | Базовый URL API. `/v1` добавляется автоматически, если его нет. |
 
 Для совместимости с официальными скриптами установки на
-[codex.sale/docs](https://codex.sale/docs) принимаются и их имена переменных:
-`CODEX_SALE_API_KEY` (а также легаси `CODEX_LB_API_KEY`) для ключа и
-`CODEX_SALE_BASE_URL` для базового URL. Приоритет — за именами `CODEXSALE_*`.
+[codex.sale/docs](https://codex.sale/docs) для API-ключа также принимаются
+`CODEX_SALE_API_KEY` и легаси `CODEX_LB_API_KEY`. Приоритет — за
+`CODEXSALE_API_KEY`.
 
 Ключ можно хранить и во встроенном хранилище учётных данных Pi, а не в
 окружении:
