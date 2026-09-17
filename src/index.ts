@@ -41,7 +41,6 @@ export default function codexSale(pi: ExtensionAPI): void {
 		}),
 	);
 
-	// NOTE: No credits/balance status is registered. codex.sale exposes no
-	// credits endpoint (the upstream Experiential Labs `/api/v1/credits` route
-	// returns 404 here), so the account balance is only visible in the web UI.
+	// NOTE: No credits/balance status is registered. Codex Sale exposes no
+	// credits endpoint, so the account balance is only visible in the web UI.
 }

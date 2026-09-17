@@ -51,18 +51,18 @@ pi auth check --provider codexsale
 Models are fetched from `GET /v1/models` and mapped to Pi models. A model is
 exposed only if it is an agent model:
 
-- `supported_params.tools` must not be `false`,
+- tool support must not be disabled (it defaults to enabled when the API omits
+  the field),
 - `status`, when present, must be `active`,
 - batch variants (ids ending in `-batch`) are excluded,
 - image-only models (`gpt-image-*`, DALL·E, Flux, …) are excluded, because they
   cannot do tool calls.
 
-Capabilities are read from the response when the API provides them. The Codex
-Sale API stopped returning the `metadata` object at one point, so the extension
-falls back to a built-in registry for `context_window`, input modalities and
-reasoning levels, and assumes `tools: true` for unknown ids. This means a model
-newly added by the API shows up in Pi automatically, without editing this
-extension.
+The endpoint currently returns only `id`, `type`, `display_name` and
+`created_at` per model. When richer fields are present they are used directly;
+otherwise the extension fills `context_window`, input modalities and reasoning
+levels from a built-in registry and assumes tool support. A model newly added by
+the API therefore shows up in Pi automatically, without editing this extension.
 
 ## Usage
 
@@ -71,7 +71,8 @@ pi --provider codexsale --model gpt-5.6-luna
 pi --list-models codexsale
 ```
 
-Thinking levels follow the model's `supported_reasoning_levels`, for example:
+Thinking levels are exposed for models capable of reasoning. The API currently
+reports none, so they come from the built-in registry — for example:
 
 ```sh
 pi --provider codexsale --model gpt-6-astra:high
@@ -79,30 +80,18 @@ pi --provider codexsale --model gpt-6-astra:high
 
 ## Account balance
 
-Codex Sale exposes no credits or balance endpoint — every reasonable path
-returns 404:
-
-```
-404  /api/v1/credits
-404  /v1/credits
-404  /v1/me, /v1/usage, /v1/balance, /v1/user, /v1/keys, /v1/auth/me
-```
-
-The extension therefore polls for no balance and shows none in the status bar,
-so switching models costs no extra round trip. The account balance is only
-visible in the Codex Sale web UI.
+Codex Sale exposes no credits or balance endpoint, so the extension registers
+none and sends no such request when switching models. The account balance is
+only visible in the Codex Sale web UI.
 
 ## Design notes
 
-- **Tolerant catalog parsing.** The API stopped sending the `metadata` object.
-  A parser that reads `metadata.supports_parallel_tool_calls` to decide `tools`
-  would discard every model and report an empty provider. This extension
-  tolerates both response shapes and enriches from a built-in model registry.
+- **Tolerant catalog parsing.** The parser accepts both the flat `data[]` list
+  the endpoint returns today and a richer `models[]` shape with per-provider
+  capabilities, using whichever fields are present.
 - **Reasoning levels in both shapes.** Accepts `[{ effort: "high" }]` and
   `["high"]`.
-- **Image-only models filtered out** instead of being exposed as text models.
-- **No balance polling.** `src/credits.ts` is gone, and `creditsUrl` /
-  `originPath` were dropped from `src/urls.ts`.
+- **Image-only models filtered out**, because they cannot make tool calls.
 
 ## Development
 
