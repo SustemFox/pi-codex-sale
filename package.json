@@ -1,0 +1,42 @@
+{
+  "name": "pi-codex-sale",
+  "version": "0.1.0",
+  "description": "Pi extension for the Codex Sale inference provider",
+  "type": "module",
+  "license": "MIT",
+  "author": "XYenon",
+  "homepage": "https://ampcode.com/@xyenon/pi-experientiallabs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PASTE_YOUR_USERNAME/pi-codex-sale.git"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "pi-coding-agent",
+    "codex-sale",
+    "codexsale",
+    "openai-responses",
+    "llm-provider"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": ["./src/index.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-ai": { "optional": true },
+    "@earendil-works/pi-coding-agent": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19"
+  }
+}
