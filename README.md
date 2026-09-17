@@ -114,11 +114,20 @@ account balance is only visible in the Codex Sale web UI.
 
 ## Development
 
-No build step — Pi loads the TypeScript sources directly.
+No build step — Pi loads the TypeScript sources directly (via jiti).
 
 ```sh
-node --experimental-strip-types --check src/*.ts
+npm install        # installs dev deps and links Pi's peer type declarations
+npm run typecheck  # tsc --noEmit
 ```
+
+The packages `@earendil-works/pi-ai` and `@earendil-works/pi-coding-agent` are
+provided by Pi at runtime, so they are declared as optional peer dependencies
+and are not installed from npm. `npm install` runs
+[`scripts/link-pi-types.mjs`](./scripts/link-pi-types.mjs), which symlinks their
+type declarations from the installed `pi` CLI into `node_modules` so the type
+checker can resolve them. Set `PI_PACKAGE_ROOT` to a `node_modules` directory to
+point at a different Pi installation.
 
 ## License
 
