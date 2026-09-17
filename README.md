@@ -16,13 +16,19 @@ hardened against upstream API changes. See [Credits](#credits) and
 ## Install
 
 ```sh
-pi install npm:pi-codex-sale
+pi install git:github.com/SustemFox/pi-codex-sale
 ```
 
 or point Pi at a local checkout:
 
 ```sh
 pi install /path/to/pi-codex-sale
+```
+
+To try it without installing:
+
+```sh
+pi -e git:github.com/SustemFox/pi-codex-sale
 ```
 
 Then set the API key (the extension reads `CODEXSALE_API_KEY`):

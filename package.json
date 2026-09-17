@@ -8,7 +8,7 @@
   "homepage": "https://ampcode.com/@xyenon/pi-experientiallabs",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PASTE_YOUR_USERNAME/pi-codex-sale.git"
+	"url": "git+https://github.com/SustemFox/pi-codex-sale.git"
   },
   "keywords": [
     "pi-package",
