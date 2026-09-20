@@ -73,7 +73,7 @@ for (const name of PEERS) {
 	if (existsSync(dest)) {
 		rmSync(dest, { recursive: true, force: true });
 	}
-	symlinkSync(source, dest, "dir");
+	symlinkSync(source, dest, process.platform === "win32" ? "junction" : "dir");
 	linked.push(shortName);
 }
 
