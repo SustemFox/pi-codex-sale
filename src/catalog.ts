@@ -103,6 +103,11 @@ function parseProvider(value: unknown): CatalogProvider | undefined {
  * Fallback metadata for models whose capabilities are not returned by the
  * `/v1/models` endpoint. The endpoint currently sends only `id`, `type`,
  * `display_name` and `created_at`.
+ *
+ * The endpoint's list also lags behind the live catalog: models that are usable
+ * (and listed on the Codex Sale site) can be missing from it entirely. Entries
+ * here are therefore merged into the catalog as well, not just used to enrich
+ * rows the endpoint already returns.
  */
 interface KnownModelInfo {
 	display_name?: string;
@@ -147,12 +152,14 @@ const KNOWN_MODELS: Record<string, KnownModelInfo> = {
 	"gpt-5.6-luna": {
 		display_name: "GPT 5.6 Luna",
 		context_window: 1_000_000,
+		max_output_tokens: 128_000,
 		input_modalities: ["text", "image"],
 		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
 	},
 	"gpt-5.6-sol": {
 		display_name: "GPT 5.6 Sol",
 		context_window: 1_000_000,
+		max_output_tokens: 128_000,
 		input_modalities: ["text", "image"],
 		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
 	},
@@ -165,10 +172,46 @@ const KNOWN_MODELS: Record<string, KnownModelInfo> = {
 	"gpt-6-astra": {
 		display_name: "GPT 6 Astra",
 		context_window: 1_050_000,
+		max_output_tokens: 128_000,
 		input_modalities: ["text", "image"],
-		reasoning_levels: ["low", "medium", "high", "xhigh", "max", "ultra"],
+		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
+	},
+	"gpt-6-sol": {
+		display_name: "GPT 6 Sol",
+		context_window: 1_050_000,
+		max_output_tokens: 128_000,
+		input_modalities: ["text", "image"],
+		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
+	},
+	"gpt-6-luna": {
+		display_name: "GPT 6 Luna",
+		context_window: 1_050_000,
+		max_output_tokens: 128_000,
+		input_modalities: ["text", "image"],
+		reasoning_levels: ["low", "medium", "high", "xhigh", "max"],
 	},
 };
+
+/** Builds a catalog row from registry metadata, for models the endpoint omits. */
+function knownModelRow(id: string, known: KnownModelInfo): CatalogRow {
+	const levels = known.reasoning_levels ?? [];
+	const reasoning = levels.length > 0;
+	return {
+		model: {
+			slug: id,
+			display_name: known.display_name ?? id,
+			context_window: known.context_window,
+			max_output_tokens: known.max_output_tokens,
+			input_modalities: known.input_modalities,
+			output_modalities: ["text"],
+			supported_params: { tools: true, reasoning },
+		},
+		providers: [{
+			provider: "codex.sale",
+			capabilities: { supports_reasoning: reasoning, supported_reasoning_efforts: levels },
+		}],
+	};
+}
 
 function isImageOnlyModel(id: string): boolean {
 	return /(^|[-_/])image([-_/]|$)/i.test(id) || /dall-e|stable-diffusion|(^|[-_/])flux([-_/]|$)/i.test(id);
@@ -188,7 +231,7 @@ function parseReasoningLevels(value: unknown): string[] {
 export function parseCatalogPage(value: unknown): CatalogListResponse {
 	const record = asRecord(value);
 	if (record && Array.isArray(record.data)) {
-		const models = record.data.flatMap((item) => {
+		const rows: CatalogRow[] = record.data.flatMap((item) => {
 			const row = asRecord(item);
 			const id = asString(row?.id);
 			if (!id || isImageOnlyModel(id)) return [];
@@ -233,8 +276,17 @@ export function parseCatalogPage(value: unknown): CatalogListResponse {
 				}],
 			} satisfies CatalogRow];
 		});
+		// The endpoint's list lags behind the live catalog, so registry models it
+		// omits are appended. `itemsRead` stays the raw row count: pagination
+		// offsets advance by rows the endpoint actually returned.
+		const listed = new Set(rows.map((row) => row.model.slug));
+		for (const [id, known] of Object.entries(KNOWN_MODELS)) {
+			if (!listed.has(id) && !isImageOnlyModel(id)) {
+				rows.push(knownModelRow(id, known));
+			}
+		}
 		return {
-			models,
+			models: rows,
 			itemsRead: record.data.length,
 			total: asNumber(record.total),
 			limit: asNumber(record.limit),

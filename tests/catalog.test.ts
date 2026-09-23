@@ -13,7 +13,10 @@ test("parseCatalogPage maps the live data[] shape and filters image-only models"
 	});
 
 	assert.equal(page.itemsRead, 4);
-	assert.deepEqual(page.models.map((row) => row.model.slug), ["gpt-5.5", "friendly", "retired"]);
+	const slugs = page.models.map((row) => row.model.slug);
+	assert.deepEqual(slugs.slice(0, 3), ["gpt-5.5", "friendly", "retired"]);
+	// Registry models the endpoint omits are appended after the reported rows.
+	assert.ok(slugs.includes("gpt-6-sol"));
 	assert.equal(page.models[0]?.model.display_name, "GPT 5.5");
 	assert.equal(page.models[1]?.model.display_name, "Friendly Model");
 	assert.equal(page.models[2]?.model.status, "retired");
@@ -59,7 +62,32 @@ test("loadModels applies agent-model filters to the live data[] shape", async ()
 	}) as Response;
 
 	const models = await loadModels({ baseUrl: "https://example.com/v1", fetch: fakeFetch });
-	assert.deepEqual(models.map((model) => model.id), ["active"]);
+	const ids = models.map((model) => model.id);
+	assert.ok(ids.includes("active"));
+	assert.ok(!ids.includes("retired"));
+	assert.ok(!ids.includes("queued-batch"));
+	assert.ok(!ids.includes("no-tools"));
+	assert.ok(!ids.includes("gpt-image-2"));
+});
+
+test("loadModels appends registry models the endpoint omits", async () => {
+	const fakeFetch: typeof fetch = async () => ({
+		ok: true,
+		json: async () => ({ data: [{ id: "gpt-5.5" }] }),
+	}) as Response;
+
+	const models = await loadModels({ baseUrl: "https://example.com/v1", fetch: fakeFetch });
+	const ids = models.map((model) => model.id);
+
+	// Present upstream: mapped from the response, not duplicated from the registry.
+	assert.equal(ids.filter((id) => id === "gpt-5.5").length, 1);
+	// Missing upstream: appended from the registry, with its capabilities.
+	assert.ok(ids.includes("gpt-6-sol"));
+	assert.ok(ids.includes("gpt-6-luna"));
+	const sol = models.find((model) => model.id === "gpt-6-sol");
+	assert.equal(sol?.reasoning, true);
+	assert.equal(sol?.contextWindow, 1_050_000);
+	assert.equal(sol?.maxTokens, 128_000);
 });
 
 test("loadModels paginates the rich models[] shape", async () => {
@@ -123,7 +151,10 @@ test("loadModels advances by raw rows when data[] filtering removes models", asy
 	});
 
 	assert.deepEqual(offsets, [0, 2]);
-	assert.deepEqual(models.map((model) => model.id), ["first-agent", "second-agent"]);
+	const ids = models.map((model) => model.id);
+	assert.ok(ids.includes("first-agent"));
+	assert.ok(ids.includes("second-agent"));
+	assert.ok(!ids.includes("gpt-image-2"));
 });
 
 test("loadModels stops when an endpoint repeats a page", async () => {
@@ -154,5 +185,7 @@ test("loadModels stops when an endpoint repeats a page", async () => {
 	});
 
 	assert.equal(calls, 2);
-	assert.deepEqual(models.map((model) => model.id), ["first", "second"]);
+	const ids = models.map((model) => model.id);
+	assert.ok(ids.includes("first"));
+	assert.ok(ids.includes("second"));
 });

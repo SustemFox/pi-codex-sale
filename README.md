@@ -72,8 +72,14 @@ exposed only if it is an agent model:
 The endpoint currently returns only `id`, `type`, `display_name` and
 `created_at` per model. When richer fields are present they are used directly;
 otherwise the extension fills `context_window`, input modalities and reasoning
-levels from a built-in registry and assumes tool support. A model newly added by
-the API therefore shows up in Pi automatically, without editing this extension.
+levels from a built-in registry and assumes tool support.
+
+The endpoint's list also lags behind the live catalog: models that work and are
+advertised on the Codex Sale site can be missing from it entirely (for example
+`gpt-6-sol` and `gpt-6-luna` were absent while fully usable). Registry entries
+are therefore appended when the endpoint omits them, so a model newly added to
+the live catalog shows up in Pi after updating the registry here, without
+waiting for `/v1/models` to catch up.
 
 ## Usage
 
